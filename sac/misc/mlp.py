@@ -1,8 +1,7 @@
 import tensorflow as tf
 
-from rllab.core.serializable import Serializable
-
-from sandbox.rocky.tf.core.parameterized import Parameterized
+from sac.rllab.core.serializable import Serializable
+from sac.rllab.core.parameterized import Parameterized
 from sac.misc import tf_utils
 
 WEIGHT_DEFAULT_NAME = "weights"

@@ -1,10 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
-from rllab.core.serializable import Serializable
-from rllab.misc.overrides import overrides
-
 from sac.rllab.misc import logger
+from sac.core.serializable import Serializable
 from .base import RLAlgorithm
 
 
@@ -142,7 +140,6 @@ class SAC(RLAlgorithm, Serializable):
 
         self._sess.run(tf.global_variables_initializer())
 
-    @overrides
     def train(self):
         """Initiate training of the SAC instance."""
 
@@ -283,12 +280,10 @@ class SAC(RLAlgorithm, Serializable):
             for target, source in zip(target_params, source_params)
         ]
 
-    @overrides
     def _init_training(self, env, policy, pool):
         super(SAC, self)._init_training(env, policy, pool)
         self._sess.run(self._target_ops)
 
-    @overrides
     def _do_training(self, itr, batch):
         """Runs the operations for updating training and target ops."""
 
@@ -312,7 +307,6 @@ class SAC(RLAlgorithm, Serializable):
 
         return feed_dict
 
-    @overrides
     def log_diagnostics(self, batch):
         """Record diagnostic information to the logger.
 
@@ -341,7 +335,6 @@ class SAC(RLAlgorithm, Serializable):
         if self._plotter:
             self._plotter.draw()
 
-    @overrides
     def get_snapshot(self, epoch):
         """Return loggable snapshot of the SAC algorithm.
 

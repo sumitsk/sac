@@ -1,4 +1,4 @@
-from rllab.core.serializable import Serializable
+from sac.rllab.core.serializable import Serializable
 
 
 def deep_clone(obj):

@@ -1,11 +1,10 @@
 import numpy as np
 
-from rllab import spaces
-from rllab.core.serializable import Serializable
-from rllab.envs.proxy_env import ProxyEnv
-from rllab.spaces.box import Box
-from rllab.misc.overrides import overrides
-from rllab.envs.base import Step
+from sac.rllab.spaces.box import Box
+from sac.rllab.core.serializable import Serializable
+from sac.rllab.envs.proxy_env import ProxyEnv
+from sac.rllab.spaces.box import Box
+from sac.rllab.envs.base import Step
 
 
 class NormalizedEnv(ProxyEnv, Serializable):
@@ -67,14 +66,12 @@ class NormalizedEnv(ProxyEnv, Serializable):
         self._obs_var = d["_obs_var"]
 
     @property
-    @overrides
     def action_space(self):
         if isinstance(self._wrapped_env.action_space, Box):
             ub = np.ones(self._wrapped_env.action_space.shape)
-            return spaces.Box(-1 * ub, ub)
+            return Box(-1 * ub, ub)
         return self._wrapped_env.action_space
 
-    @overrides
     def step(self, action):
         if isinstance(self._wrapped_env.action_space, Box):
             # rescale the action

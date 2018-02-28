@@ -1,9 +1,8 @@
 import tensorflow as tf
 
-from rllab.core.serializable import Serializable
-
+from sac.core.serializable import Serializable
 from sac.misc.mlp import MLPFunction
-from sac.misc import tf_utils
+
 
 class NNVFunction(MLPFunction):
 

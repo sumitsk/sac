@@ -4,9 +4,8 @@ from contextlib import contextmanager
 import numpy as np
 import tensorflow as tf
 
-from rllab.core.serializable import Serializable
-
 from sac.rllab.misc import logger
+from sac.core.serializable import Serializable
 from sac.distributions import RealNVPBijector
 from sac.policies import NNPolicy
 

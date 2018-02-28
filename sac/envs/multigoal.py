@@ -1,15 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from rllab.misc.overrides import overrides
-from rllab.core.serializable import Serializable
-from rllab.spaces.box import Box
-from rllab.envs.base import Env
-
+from sac.rllab.spaces.box import Box
 from sac.rllab.misc import logger
+from sac.rllab.core.serializable import Serializable
 
 
-class MultiGoalEnv(Env, Serializable):
+class MultiGoalEnv(Serializable):
     """
     Move a 2D point mass to one of the goal positions. Cost is the distance to
     the closest goal.
@@ -49,7 +46,6 @@ class MultiGoalEnv(Env, Serializable):
         self.fixed_plots = None
         self.dynamic_plots = []
 
-    @overrides
     def reset(self):
         unclipped_observation = self.init_mu + self.init_sigma * \
             np.random.normal(size=self.dynamics.s_dim)
@@ -57,7 +53,6 @@ class MultiGoalEnv(Env, Serializable):
         self.observation = np.clip(unclipped_observation, o_lb, o_ub)
         return self.observation
 
-    @overrides
     @property
     def observation_space(self):
         return Box(
@@ -66,7 +61,6 @@ class MultiGoalEnv(Env, Serializable):
             shape=None
         )
 
-    @overrides
     @property
     def action_space(self):
         return Box(
@@ -78,7 +72,6 @@ class MultiGoalEnv(Env, Serializable):
     def get_current_obs(self):
         return np.copy(self.observation)
 
-    @overrides
     def step(self, action):
         action = action.ravel()
 
@@ -118,7 +111,6 @@ class MultiGoalEnv(Env, Serializable):
 
         self._plot_position_cost(self._ax)
 
-    @overrides
     def render(self, paths):
         if self._ax is None:
             self._init_plot()
@@ -182,7 +174,6 @@ class MultiGoalEnv(Env, Serializable):
     def set_param_values(self, params):
         pass
 
-    @overrides
     def log_diagnostics(self, paths):
         n_goal = len(self.goal_positions)
         goal_reached = [False] * n_goal
@@ -195,7 +186,6 @@ class MultiGoalEnv(Env, Serializable):
 
         logger.record_tabular('env:goals_reached', goal_reached.count(True))
 
-    @overrides
     def horizon(self):
         return None
 
