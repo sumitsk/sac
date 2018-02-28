@@ -5,7 +5,8 @@ from rllab.misc.overrides import overrides
 from rllab.core.serializable import Serializable
 from rllab.spaces.box import Box
 from rllab.envs.base import Env
-from rllab.misc import logger
+
+from sac.rllab.misc import logger
 
 
 class MultiGoalEnv(Env, Serializable):

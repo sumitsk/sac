@@ -5,9 +5,9 @@ import numpy as np
 import tensorflow as tf
 
 from rllab.misc.overrides import overrides
-from rllab.misc import logger
 from rllab.core.serializable import Serializable
 
+from sac.rllab.misc import logger
 from sac.distributions import GMM
 from sac.policies import NNPolicy
 from sac.misc import tf_utils

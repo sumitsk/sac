@@ -3,15 +3,13 @@ import gtimer as gt
 
 import numpy as np
 
-from rllab.misc import logger
-from rllab.algos.base import Algorithm
-
+from sac.rllab.misc import logger
 from sac.core.serializable import deep_clone
 from sac.misc import tf_utils
 from sac.misc.sampler import rollouts
 
 
-class RLAlgorithm(Algorithm):
+class RLAlgorithm:
     """Abstract RLAlgorithm.
 
     Implements the _train and _evaluate methods to be used

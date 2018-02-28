@@ -2,9 +2,9 @@ import numpy as np
 import tensorflow as tf
 
 from rllab.core.serializable import Serializable
-from rllab.misc import logger
 from rllab.misc.overrides import overrides
 
+from sac.rllab.misc import logger
 from .base import RLAlgorithm
 
 

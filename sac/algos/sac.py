@@ -2,10 +2,10 @@ import numpy as np
 import tensorflow as tf
 
 from rllab.core.serializable import Serializable
-from rllab.misc import logger
 from rllab.misc.overrides import overrides
 
 from .base import RLAlgorithm
+from sac.rllab.misc import logger
 
 EPS = 1e-6
 

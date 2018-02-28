@@ -5,8 +5,8 @@ import numpy as np
 import tensorflow as tf
 
 from rllab.core.serializable import Serializable
-from rllab.misc import logger
 
+from sac.rllab.misc import logger
 from sac.distributions import RealNVPBijector
 from sac.policies import NNPolicy
 
