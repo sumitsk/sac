@@ -1,5 +1,5 @@
 import abc
-import gtimer as gt
+# import gtimer as gt
 
 import numpy as np
 
@@ -85,12 +85,13 @@ class RLAlgorithm:
             last_path_return = 0
             max_path_return = -np.inf
             n_episodes = 0
-            gt.rename_root('RLAlgorithm')
-            gt.reset()
-            gt.set_def_unique(False)
+            # gt.rename_root('RLAlgorithm')
+            # gt.reset()
+            # gt.set_def_unique(False)
 
-            for epoch in gt.timed_for(
-                    range(self._n_epochs + 1), save_itrs=True):
+            # for epoch in gt.timed_for(
+            #         range(self._n_epochs + 1), save_itrs=True):
+            for epoch in range(self._n_epochs + 1):
                 logger.push_prefix('Epoch #%d | ' % epoch)
 
                 for t in range(self._epoch_length):
@@ -121,27 +122,27 @@ class RLAlgorithm:
 
                     else:
                         observation = next_ob
-                    gt.stamp('sample')
+                    # gt.stamp('sample')
 
                     if self._pool.size >= self._min_pool_size:
                         for i in range(self._n_train_repeat):
                             batch = self._pool.random_batch(self._batch_size)
                             self._do_training(iteration, batch)
 
-                    gt.stamp('train')
+                    # gt.stamp('train')
 
                 self._evaluate(epoch)
 
                 params = self.get_snapshot(epoch)
                 logger.save_itr_params(epoch, params)
-                times_itrs = gt.get_times().stamps.itrs
+                # times_itrs = gt.get_times().stamps.itrs
 
-                eval_time = times_itrs['eval'][-1] if epoch > 1 else 0
-                total_time = gt.get_times().total
-                logger.record_tabular('time-train', times_itrs['train'][-1])
-                logger.record_tabular('time-eval', eval_time)
-                logger.record_tabular('time-sample', times_itrs['sample'][-1])
-                logger.record_tabular('time-total', total_time)
+                # eval_time = times_itrs['eval'][-1] if epoch > 1 else 0
+                # total_time = gt.get_times().total
+                # logger.record_tabular('time-train', times_itrs['train'][-1])
+                # logger.record_tabular('time-eval', eval_time)
+                # logger.record_tabular('time-sample', times_itrs['sample'][-1])
+                # logger.record_tabular('time-total', total_time)
                 logger.record_tabular('epoch', epoch)
                 logger.record_tabular('episodes', n_episodes)
                 logger.record_tabular('max-path-return', max_path_return)
@@ -151,7 +152,7 @@ class RLAlgorithm:
                 logger.dump_tabular(with_prefix=False)
                 logger.pop_prefix()
 
-                gt.stamp('eval')
+                #gt.stamp('eval')
 
             env.terminate()
 

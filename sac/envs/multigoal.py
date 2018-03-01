@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from sac.rllab.envs.base import Env
 from sac.rllab.spaces.box import Box
 from sac.rllab.misc import logger
 from sac.rllab.core.serializable import Serializable
 
 
-class MultiGoalEnv(Serializable):
+class MultiGoalEnv(Env, Serializable):
     """
     Move a 2D point mass to one of the goal positions. Cost is the distance to
     the closest goal.
