@@ -16,8 +16,8 @@ import sac.config as config
 LOGGER_PARAMS = {
     'exp_name': str(timestamp()),
     'mode': 'local',
-    'log_dir': config.LOCAL_LOG_DIR,
-    'snapshot_mode': 'gap',
+    'log_dir': config.LOCAL_LOG_DIR + '/multigoal',
+    'snapshot_mode': 'last',
     'snapshot_gap': 100,
 }
 

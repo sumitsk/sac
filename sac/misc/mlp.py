@@ -169,9 +169,9 @@ class MLPFunction(Parameterized, Serializable):
         self._layer_sizes = list(hidden_layer_sizes) + [None]
         self._output_nonlinearity = output_nonlinearity
 
-        self._output_t = self.get_output_for(*self._input_pls)
+        self._output_t = self.get_output_for(self._input_pls)
 
-    def get_output_for(self, *inputs, reuse=False):
+    def get_output_for(self, inputs, reuse=False):
         with tf.variable_scope(self._name, reuse=reuse):
             value_t = mlp(
                 inputs=inputs,

@@ -5,7 +5,6 @@ from sac.misc.mlp import MLPFunction
 
 
 class NNVFunction(MLPFunction):
-
     def __init__(self, env_spec, hidden_layer_sizes=(100, 100)):
         Serializable.quick_init(self, locals())
 
@@ -16,8 +15,8 @@ class NNVFunction(MLPFunction):
             name='observation',
         )
 
-        super(NNVFunction, self).__init__(
-            'vf', (self._obs_pl,), hidden_layer_sizes)
+        super(NNVFunction, self).__init__('vf', (self._obs_pl, ),
+                                          hidden_layer_sizes)
 
 
 class NNQFunction(MLPFunction):

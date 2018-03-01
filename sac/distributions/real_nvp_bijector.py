@@ -93,7 +93,7 @@ class CouplingBijector(ConditionalBijector):
         self.scale_fn = scale_fn
         self.scale_regularization = scale_regularization
 
-        super().__init__(event_ndims=event_ndims,
+        super(CouplingBijector, self).__init__(event_ndims=event_ndims,
                          validate_args=validate_args,
                          name=name)
 
@@ -164,8 +164,8 @@ class CouplingBijector(ConditionalBijector):
                                reuse=tf.AUTO_REUSE):
             scale = self.scale_fn(
                 masked_x,
-                **condition_kwargs,
-                output_size=nonlinearity_output_size)
+                output_size=nonlinearity_output_size,
+                **condition_kwargs)
 
         log_det_jacobian = tf.reduce_sum(
             scale, axis=tuple(range(1, len(x.shape))))
@@ -292,7 +292,7 @@ class RealNVPBijector(ConditionalBijector):
 
         self.build()
 
-        super().__init__(event_ndims=event_ndims,
+        super(RealNVPBijector, self).__init__(event_ndims=event_ndims,
                          validate_args=validate_args,
                          name=name)
 
@@ -307,13 +307,13 @@ class RealNVPBijector(ConditionalBijector):
             return feedforward_net(
                 tf.concat((inputs, condition), axis=1),
                 # TODO: should allow multi_dimensional inputs/outputs
-                layer_sizes=(*translation_hidden_sizes, output_size))
+                layer_sizes=list(translation_hidden_sizes) + [output_size])
 
         def scale_wrapper(inputs, condition, output_size):
             return feedforward_net(
                 tf.concat((inputs, condition), axis=1),
                 # TODO: should allow multi_dimensional inputs/outputs
-                layer_sizes=(*scale_hidden_sizes, output_size))
+                layer_sizes=list(scale_hidden_sizes) + [output_size])
 
         self.layers = [
             CouplingBijector(

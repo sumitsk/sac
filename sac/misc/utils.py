@@ -14,10 +14,11 @@ def timestamp():
 
 
 def initialize_logger(**kwargs):
-    tabular_log_file = os.path.join(
-        kwargs.get('log_dir'), kwargs.get('exp_name'), 'progress.csv')
+    log_dir = os.path.join(kwargs.get('log_dir'), kwargs.get('exp_name'))
+    tabular_log_file = os.path.join(log_dir, 'progress.csv')
     logger.add_tabular_output(tabular_log_file)
 
+    logger.set_snapshot_dir(log_dir)
     logger.set_snapshot_mode(kwargs.get('snapshot_mode'))
     logger.set_snapshot_gap(kwargs.get('snapshot_gap'))
     logger.push_prefix("[%s] " % kwargs.get('exp_name'))
