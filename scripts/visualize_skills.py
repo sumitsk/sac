@@ -6,7 +6,17 @@ import os
 from sac.misc import utils
 from sac.policies.hierarchical_policy import FixedOptionPolicy
 from sac.misc.sampler import rollouts
+import pdb
 
+
+def get_num_skills(policy, env, concat_type):
+    if concat_type == 'concatenation':
+        num_skills =  policy.observation_space.flat_dim - env.observation_space.flat_dim
+    elif concat_type == 'bilinear':
+        num_skills =  policy.observation_space.flat_dim / env.observation_space.flat_dim
+    else:
+        raise NotImplementedError
+    return int(num_skills)
 
 if __name__ == "__main__":
 
@@ -19,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument('--no-deterministic', '-nd', dest='deterministic',
                         action='store_false')
     parser.add_argument('--separate_videos', type=bool, default=False)
+    parser.add_argument('--concat-type', default='concatentation')
     parser.set_defaults(deterministic=True)
 
     args = parser.parse_args()
@@ -33,11 +44,15 @@ if __name__ == "__main__":
         data = joblib.load(args.file)
         policy = data['policy']
         env = data['env']
-        num_skills = data['policy'].observation_space.flat_dim - data['env'].spec.observation_space.flat_dim
+        #pdb.set_trace()
+        num_skills = get_num_skills(policy, env, args.concat_type)
 
+        #num_skills = data['policy'].observation_space.flat_dim - data['env'].spec.observation_space.flat_dim
+
+        concat_type = args.concat_type
         with policy.deterministic(args.deterministic):
             for z in range(num_skills):
-                fixed_z_policy = FixedOptionPolicy(policy, num_skills, z)
+                fixed_z_policy = FixedOptionPolicy(policy, num_skills, z, concat_type)
                 new_paths = rollouts(env, fixed_z_policy,
                                   args.max_path_length, n_paths=1,
                                   render=True, render_mode='rgb_array')
@@ -61,7 +76,7 @@ if __name__ == "__main__":
         best_z = np.argmax(reward_list)
         worst_z = np.argmin(reward_list)
         for (z, filename) in [(best_z, best_filename), (worst_z, worst_filename)]:
-            fixed_z_policy = FixedOptionPolicy(policy, num_skills, z)
+            fixed_z_policy = FixedOptionPolicy(policy, num_skills, z, concat_type)
             new_paths = rollouts(env, fixed_z_policy,
                                  3 * args.max_path_length, n_paths=1,
                                  render=True, render_mode='rgb_array')
