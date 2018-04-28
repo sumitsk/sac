@@ -11,6 +11,7 @@ from sac.policies.gmm import GMMPolicy
 from sac.replay_buffers import SimpleReplayBuffer
 from sac.value_functions import NNQFunction, NNVFunction
 
+import pdb
 
 SHARED_PARAMS = {
     "seed": [1, 2, 3],
@@ -194,4 +195,5 @@ def launch_experiments(variant_generator):
 if __name__ == '__main__':
     args = parse_args()
     variant_generator = get_variants(args)
+    # pdb.set_trace()
     launch_experiments(variant_generator)

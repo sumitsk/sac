@@ -10,6 +10,7 @@ from sac.core.serializable import deep_clone
 from sac.misc import tf_utils
 from sac.misc.sampler import rollouts
 
+import pdb
 
 class RLAlgorithm(Algorithm):
     """Abstract RLAlgorithm.
@@ -86,6 +87,7 @@ class RLAlgorithm(Algorithm):
                                       save_itrs=True):
                 logger.push_prefix('Epoch #%d | ' % epoch)
 
+                print (epoch)
                 for t in range(self._epoch_length):
                     iteration = t + epoch * self._epoch_length
 
@@ -119,6 +121,7 @@ class RLAlgorithm(Algorithm):
                     if self._pool.size >= self._min_pool_size:
                         for i in range(self._n_train_repeat):
                             batch = self._pool.random_batch(self._batch_size)
+                            # pdb.set_trace()
                             self._do_training(iteration, batch)
 
                     gt.stamp('train')

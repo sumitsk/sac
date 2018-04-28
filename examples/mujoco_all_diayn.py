@@ -19,7 +19,7 @@ from sac.value_functions import NNQFunction, NNVFunction, NNDiscriminatorFunctio
 import argparse
 import numpy as np
 import os
-
+import pdb
 
 SHARED_PARAMS = {
     'seed': [1],
@@ -36,6 +36,8 @@ SHARED_PARAMS = {
     'snapshot_gap': 10,
     'sync_pkl': True,
     'num_skills': 50,
+    #'concat_type': 'concatenation',
+    'concat_type': 'bilinear',
     'scale_entropy': 0.1,
     'include_actions': False,
     'learn_p_z': False,
@@ -162,6 +164,25 @@ def get_variants(args):
 
     return vg
 
+def get_aug_obs_space(obs_space, variant):
+    if variant['concat_type'] == 'concatenation':
+        low = np.hstack([obs_space.low, np.full(variant['num_skills'], 0)])
+        high = np.hstack([obs_space.high, np.full(variant['num_skills'], 1)])
+        aug_obs_space = spaces.Box(low=low, high=high)
+        return aug_obs_space
+
+    elif variant['concat_type'] == 'bilinear':
+        dim = obs_space.shape[0] * variant['num_skills']
+        low = np.ones(dim) * obs_space.low[0]
+        high = np.ones(dim) * obs_space.high[0]
+        aug_obs_space = spaces.Box(low=low, high=high)
+        return aug_obs_space        
+
+    else:
+        raise NotImplementedError
+
+
+
 
 def run_experiment(variant):
     if variant['env_name'] == 'humanoid-rllab':
@@ -175,9 +196,15 @@ def run_experiment(variant):
 
     obs_space = env.spec.observation_space
     assert isinstance(obs_space, spaces.Box)
+
+    '''
     low = np.hstack([obs_space.low, np.full(variant['num_skills'], 0)])
     high = np.hstack([obs_space.high, np.full(variant['num_skills'], 1)])
     aug_obs_space = spaces.Box(low=low, high=high)
+    '''
+    aug_obs_space = get_aug_obs_space(obs_space, variant)
+    # pdb.set_trace()
+
     aug_env_spec = EnvSpec(aug_obs_space, env.spec.action_space)
     pool = SimpleReplayBuffer(
         env_spec=aug_env_spec,
@@ -235,6 +262,7 @@ def run_experiment(variant):
         discount=variant['discount'],
         tau=variant['tau'],
         num_skills=variant['num_skills'],
+        concat_type=variant['concat_type'],
         save_full_state=False,
         include_actions=variant['include_actions'],
         learn_p_z=variant['learn_p_z'],

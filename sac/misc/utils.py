@@ -2,24 +2,44 @@ import datetime
 import dateutil.tz
 import os
 import numpy as np
-
+import pdb
 
 def timestamp():
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     return now.strftime('%Y-%m-%d-%H-%M-%S-%f-%Z')
 
-def concat_obs_z(obs, z, num_skills):
+def concat_obs_z(obs, z, num_skills, concat_type):
     """Concatenates the observation to a one-hot encoding of Z."""
     assert np.isscalar(z)
     z_one_hot = np.zeros(num_skills)
     z_one_hot[z] = 1
-    return np.hstack([obs, z_one_hot])
+    if concat_type == 'concatenation':
+        return np.hstack([obs, z_one_hot])
+    elif concat_type == 'bilinear':
+        return np.outer(z_one_hot, obs).flatten()
+    else:
+        raise NotImplementedError
 
-def split_aug_obs(aug_obs, num_skills):
+
+def split_aug_obs(aug_obs, num_skills, concat_type):
     """Splits an augmented observation into the observation and Z."""
-    (obs, z_one_hot) = (aug_obs[:-num_skills], aug_obs[-num_skills:])
-    z = np.where(z_one_hot == 1)[0][0]
-    return (obs, z)
+    if concat_type == 'concatenation':
+        (obs, z_one_hot) = (aug_obs[:-num_skills], aug_obs[-num_skills:])
+        z = np.where(z_one_hot == 1)[0][0]
+        return (obs, z)
+    elif concat_type == 'bilinear':
+        splits = np.split(aug_obs, indices_or_sections=num_skills, axis=1)
+        stack = np.stack(splits, axis=2)
+        obs = np.sum(stack, axis=2)
+
+        val = np.sum(np.abs(stack), axis=1)
+        mask = np.not_equal(val, 0)
+        z = mask * 1.0
+        return obs, z
+
+    else:
+        raise NotImplementedError        
+
 
 def _make_dir(filename):
     folder = os.path.dirname(filename)

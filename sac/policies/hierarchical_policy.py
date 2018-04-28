@@ -3,16 +3,17 @@ import numpy as np
 import tensorflow as tf
 
 class FixedOptionPolicy(object):
-    def __init__(self, base_policy, num_skills, z):
+    def __init__(self, base_policy, num_skills, z, concat_type):
         self._z = z
         self._base_policy = base_policy
         self._num_skills = num_skills
+        self._concat_type = concat_type
 
     def reset(self):
         pass
 
     def get_action(self, obs):
-        aug_obs = concat_obs_z(obs, self._z, self._num_skills)
+        aug_obs = concat_obs_z(obs, self._z, self._num_skills, self._concat_type)
         return self._base_policy.get_action(aug_obs)
 
     def get_distribution_for(self, obs_t, reuse=False):

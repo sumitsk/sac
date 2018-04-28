@@ -16,7 +16,7 @@ import numpy as np
 import os
 import scipy.stats
 import tensorflow as tf
-
+import pdb
 
 EPS = 1E-6
 
@@ -36,6 +36,7 @@ class DIAYN(SAC):
                  discount=0.99,
                  tau=0.01,
                  num_skills=20,
+                 concat_type='concatenation',
                  save_full_state=False,
                  find_best_skill_interval=10,
                  best_skill_n_rollouts=10,
@@ -97,8 +98,20 @@ class DIAYN(SAC):
         self._include_actions = include_actions
         self._add_p_z = add_p_z
 
+
         self._Da = self._env.action_space.flat_dim
         self._Do = self._env.observation_space.flat_dim
+
+        # implement concatenation type here
+        # self.concat_type = 'concatenation'
+        self.concat_type = concat_type
+
+        if self.concat_type == 'concatenation':            
+            self._embed_size = self._Do + self._num_skills
+        elif self.concat_type == 'bilinear':
+            self._embed_size = self._Do * self._num_skills    
+        else:
+            raise NotImplementedError
 
         self._training_ops = list()
 
@@ -122,6 +135,7 @@ class DIAYN(SAC):
             - zs
         """
 
+        '''
         self._obs_pl = tf.placeholder(
             tf.float32,
             shape=[None, self._Do + self._num_skills],
@@ -133,6 +147,22 @@ class DIAYN(SAC):
             shape=[None, self._Do + self._num_skills],
             name='next_observation',
         )
+        '''
+
+        # initialize placeholders
+        self._obs_pl = tf.placeholder(
+            tf.float32,
+            shape=[None, self._embed_size],
+            name='observation',
+        )
+
+        self._obs_next_pl = tf.placeholder(
+            tf.float32,
+            shape=[None, self._embed_size],
+            name='next_observation',
+        )
+        
+
         self._action_pl = tf.placeholder(
             tf.float32,
             shape=[None, self._Da],
@@ -156,7 +186,24 @@ class DIAYN(SAC):
         return np.random.choice(self._num_skills, p=self._p_z)
 
     def _split_obs(self):
-        return tf.split(self._obs_pl, [self._Do, self._num_skills], 1)
+        if self.concat_type == 'concatenation':
+            return tf.split(self._obs_pl, [self._Do, self._num_skills], 1)
+        
+        elif self.concat_type == 'bilinear': 
+            splits = tf.split(self._obs_pl, num_or_size_splits=self._num_skills, axis=1)
+            stacks = tf.stack(splits, axis=2)
+            obs = tf.reduce_sum(stacks, axis=2)
+
+            val = tf.reduce_sum(tf.abs(stacks), axis=1)
+            zero = tf.constant(0, dtype=tf.float32)
+            mask = tf.not_equal(val, zero)
+            z = tf.cast(mask, tf.float32)
+            return obs, z
+
+        else:
+            raise NotImplementedError
+
+
 
     def _init_critic_update(self):
         """Create minimization operation for critic Q-function.
@@ -181,6 +228,7 @@ class DIAYN(SAC):
         reward_pl = -1 * tf.nn.softmax_cross_entropy_with_logits(labels=z_one_hot,
                                                                  logits=logits)
         reward_pl = tf.check_numerics(reward_pl, 'Check numerics (1): reward_pl')
+        
         p_z = tf.reduce_sum(self._p_z_pl * z_one_hot, axis=1)
         log_p_z = tf.log(p_z + EPS)
         self._log_p_z = log_p_z
@@ -224,6 +272,7 @@ class DIAYN(SAC):
 
         self._policy_dist = self._policy.get_distribution_for(
             self._obs_pl, reuse=True)
+        # pdb.set_trace()
         log_pi_t = self._policy_dist.log_p_t  # N
 
         self._vf_t = self._vf.get_output_for(self._obs_pl, reuse=True)  # N
@@ -295,7 +344,7 @@ class DIAYN(SAC):
         best_returns = float('-inf')
         best_z = None
         for z in range(self._num_skills):
-            fixed_z_policy = FixedOptionPolicy(self._policy, self._num_skills, z)
+            fixed_z_policy = FixedOptionPolicy(self._policy, self._num_skills, z, self.concat_type)
             paths = rollouts(self._eval_env, fixed_z_policy,
                              self._max_path_length, self._best_skill_n_rollouts,
                              render=False)
@@ -303,7 +352,7 @@ class DIAYN(SAC):
             if total_returns > best_returns:
                 best_returns = total_returns
                 best_z = z
-        return FixedOptionPolicy(self._policy, self._num_skills, best_z)
+        return FixedOptionPolicy(self._policy, self._num_skills, best_z, self.concat_type)
 
     def _save_traces(self, filename):
         utils._make_dir(filename)
@@ -392,7 +441,7 @@ class DIAYN(SAC):
 
                 path_length_list = []
                 z = self._sample_z()
-                aug_obs = utils.concat_obs_z(observation, z, self._num_skills)
+                aug_obs = utils.concat_obs_z(observation, z, self._num_skills, concat_type=self.concat_type)
 
                 for t in range(self._epoch_length):
                     iteration = t + epoch * self._epoch_length
@@ -411,7 +460,8 @@ class DIAYN(SAC):
 
                     next_ob, reward, terminal, info = env.step(action)
                     aug_next_ob = utils.concat_obs_z(next_ob, z,
-                                                     self._num_skills)
+                                                     self._num_skills,
+                                                     concat_type=self.concat_type)
                     path_length += 1
                     path_return += reward
 
